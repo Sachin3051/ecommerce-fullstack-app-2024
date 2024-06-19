@@ -1,0 +1,122 @@
+//protected Admin route auth
+router.get("/admin-auth", requireSignIn, isAdmin, (req, res) => {
+  res.status(200).send({ ok: true });
+});
+
+//AdminRoute.js
+import { useState, useEffect } from "react";
+import { useAuth } from "../../context/auth";
+import { Outlet } from "react-router-dom";
+import axios from "axios";
+import Spinner from "../Spinner";
+
+export default function PrivateRoute() {
+  const [ok, setOk] = useState(false);
+  const [auth, setAuth] = useAuth();
+
+  useEffect(() => {
+    const authCheck = async () => {
+      const res = await axios.get("/api/v1/auth/admin-auth");
+      if (res.data.ok) {
+        setOk(true);
+      } else {
+        setOk(false);
+      }
+    };
+    if (auth?.token) authCheck();
+  }, [auth?.token]);
+
+  return ok ? <Outlet /> : <Spinner path="" />;
+}
+
+//header.js
+<li>
+                        <NavLink
+                          to={`/dashboard/${
+                            auth?.user?.role === 1 ? "admin" : "user"
+                          }`}
+                          className="dropdown-item"
+                        >
+                          Dashboard
+                        </NavLink>
+                      </li>
+
+//create AdminMenu.js
+import React from "react";
+import { NavLink } from "react-router-dom";
+const AdminMenu = () => {
+  return (
+    <>
+      <div className="text-center">
+        <div className="list-group dashboard-menu">
+          <h4>Admin Panel</h4>
+          <NavLink
+            to="/dashboard/admin/create-category"
+            className="list-group-item list-group-item-action"
+          >
+            Create Category
+          </NavLink>
+          <NavLink
+            to="/dashboard/admin/create-product"
+            className="list-group-item list-group-item-action"
+          >
+            Create Product
+          </NavLink>
+          <NavLink
+            to="/dashboard/admin/products"
+            className="list-group-item list-group-item-action"
+          >
+            Products
+          </NavLink>
+          <NavLink
+            to="/dashboard/admin/orders"
+            className="list-group-item list-group-item-action"
+          >
+            Orders
+          </NavLink>
+          {/* <NavLink
+            to="/dashboard/admin/users"
+            className="list-group-item list-group-item-action"
+          >
+            Users
+          </NavLink> */}
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default AdminMenu;
+
+
+//Admindashboard.js
+import React from "react";
+import AdminMenu from "../../components/Layout/AdminMenu";
+import Layout from "./../../components/Layout/Layout";
+import { useAuth } from "../../context/auth";
+const AdminDashboard = () => {
+  const [auth] = useAuth();
+  return (
+    <Layout>
+      <div className="container-fluid m-3 p-3 dashboard">
+        <div className="row">
+          <div className="col-md-3">
+            <AdminMenu />
+          </div>
+          <div className="col-md-9">
+            <div className="card w-75 p-3">
+              <h3> Admin Name : {auth?.user?.name}</h3>
+              <h3> Admin Email : {auth?.user?.email}</h3>
+              <h3> Admin Contact : {auth?.user?.phone}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default AdminDashboard;
+
+
+//
